@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>💉 Insulina - Antes ou Depois da Refeição?</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; font-size: 1.1em; background: #f9f9f9; }
+    h1 { text-align: center; font-size: 1.6em; color: #004080; margin-bottom: 20px; }
+    label, select, input, button { width: 100%; margin-bottom: 12px; }
+    select, input { padding: 10px; font-size: 1em; }
+    button { padding: 12px; font-size: 1.1em; background: #004080; color: #fff; border: none; border-radius: 6px; cursor: pointer; }
+    button:hover { background: #003060; }
+    #resultado { background: #e6f0ff; padding: 15px; border-radius: 8px; margin-top: 20px; }
+    .linha { margin-bottom: 8px; }
+    .alerta { color: red; font-weight: bold; margin-top: 12px; }
+  </style>
+</head>
+<body>
+
+  <h1>💉 Dose de Insulina</h1>
+
+  <label>🍽️ Refeição:</label>
+  <select id="refeicao">
+    <option value="cafe">Café da manhã</option>
+    <option value="almoco">Almoço</option>
+    <option value="jantar">Jantar</option>
+  </select>
+
+  <label>🩸 Glicemia (mg/dL):</label>
+  <input type="number" id="glicemia" min="40" max="500" placeholder="Ex: 160">
+
+  <label>⏱️ Glicemia registrada:</label>
+  <select id="tempo">
+    <option value="antes">Antes da refeição</option>
+    <option value="apos">Após a refeição</option>
+  </select>
+
+  <button onclick="calcularDose()">📲 Calcular Dose</button>
+
+  <div id="resultado">Preencha todos os campos e toque em Calcular.</div>
+
+  <script>
+    function calcularDose() {
+      const refeicao = document.getElementById("refeicao").value;
+      const glic = parseInt(document.getElementById("glicemia").value);
+      const tempo = document.getElementById("tempo").value;
+      const res = document.getElementById("resultado");
+
+      if (isNaN(glic) || glic < 40 || glic > 500) {
+        res.innerText = "❌ Glicemia inválida.";
+        return;
+      }
+
+      // Dose fixa de NPH
+      const doseNPH = refeicao === "cafe" ? 20 : refeicao === "jantar" ? 10 : 0;
+
+      // Escala base de correção (pré-refeição)
+      let base = 0;
+      if (glic < 140) base = 0;
+      else if (glic <= 180) base = 2;
+      else if (glic <= 220) base = 4;
+      else if (glic <= 260) base = 6;
+      else if (glic <= 300) base = 8;
+      else if (glic <= 340) base = 10;
+      else if (glic <= 380) base = 12;
+      else base = 14;
+
+      // Ajuste pós-prandial (redução de 50%)
+      const regular = tempo === 'apos' ? Math.round(base * 0.5) : base;
+
+      // Monta resultado
+      let txt = `<div class="linha">🍽️ <strong>Refeição:</strong> ${
+        refeicao==='cafe'?'Café da manhã':refeicao==='almoco'?'Almoço':'Jantar'
+      }</div>`;
+      txt += `<div class="linha">🩸 <strong>Glicemia:</strong> ${glic} mg/dL (${tempo})</div>`;
+      txt += `<div class="linha">💉 <strong>NPH:</strong> ${doseNPH>0 ? doseNPH+" UI" : "Não aplicar"}</div>`;
+      txt += `<div class="linha">💉 <strong>Regular:</strong> ${regular>0 ? regular+" UI" : "Não aplicar"}</div>`;
+
+      if (glic > 380) {
+        txt += `<div class="alerta">⚠️ Glicemia muito alta! Considere contato médico.</div>`;
+      }
+
+      res.innerHTML = txt;
+    }
+  </script>
+
+</body>
+</html>
